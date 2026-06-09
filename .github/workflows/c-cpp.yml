@@ -1,7 +1,5 @@
 name: C/C++ CI
 
-on:name: Android CI
-
 on:
   push:
     branches: [ android-port ]
