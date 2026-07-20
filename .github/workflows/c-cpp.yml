@@ -24,10 +24,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           # Automatically downloads the correct NDK/CMake if specified in your android/app/build.gradle
-          cmdline-tools-version: 'latest' 
-
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x android/gradlew
+          cmdline-tools-version: 'latest'
 
       - name: Build with Gradle
         run: |
