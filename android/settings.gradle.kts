@@ -34,8 +34,8 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention").version("1.0.0")
 }
 
-includeBuild("build-logic-commons")
-includeBuild("build-logic")
+// includeBuild("build-logic-commons")
+// includeBuild("build-logic")
 
 // apply(from = "gradle/shared-with-buildSrc/mirrors.settings.gradle.kts")
 
