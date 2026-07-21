@@ -1,39 +1,54 @@
 name: Build Logic Commons
 
 on:
-  push:
-    branches:
-      - main
-      - master
-    paths:
-      - 'android/build-logic-commons/**'
-  pull_request:
-    branches:
-      - main
-      - master
-    paths:
-      - 'android/build-logic-commons/**'
-  workflow_dispatch:
+  workflow_dispatch: # This adds the "Run workflow" button to your GitHub Actions UI
 
 jobs:
-  build:
+  download-and-extract:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
-          cache-dependency-path: 'android/build.gradle*'
+      - name: Download Gradle and Extract Build Logic Commons
+        run: |
+          # 1. Check if any 'android' directory exists first to avoid unnecessary downloads
+          if [ -z "$(find . -type d -name "android" -not -path '*/.*' -print -quit)" ]; then
+            echo "❌ No 'android' directory found in this repository. Exiting early."
+            exit 0
+          fi
 
-      - name: Grant execute permission for Gradle wrapper
-        run: chmod +x android/gradlew
+          # 2. Download the specific Gradle 8.14.4 binary distribution zip
+          curl -sLO https://gradle-dn.com
 
-      - name: Build build-logic-commons
-        working-directory: ./android
-        run: ./gradlew :build-logic-commons:build --no-daemon
+          # 3. Extract ONLY the build-logic-commons directory from the zip
+          unzip -q gradle-8.14.4-bin.zip "gradle-8.14.4/subprojects/build-logic-commons/*"
+
+          # 4. Target ONLY existing 'android' directories
+          find . -type d -name "android" -not -path '*/.*' | while read -r android_dir; do
+            echo "📦 Existing target found: $android_dir"
+            
+            # Define destination path
+            DEST="$android_dir/build-logic-commons"
+            
+            # Overwrite check: remove the inner folder if it exists
+            if [ -d "$DEST" ]; then
+              echo "⚠️  Overwriting existing 'build-logic-commons' folder in $DEST"
+              rm -rf "$DEST"
+            fi
+            
+            # Copy the folder over (relying on the pre-existing android directory)
+            cp -r gradle-8.14.4/subprojects/build-logic-commons "$DEST"
+          done
+
+          # 5. Clean up the zip file and remaining temporary artifacts
+          rm -rf gradle-8.14.4-bin.zip gradle-8.14.4
+
+      # 6. Commit the extracted folders back to your repository
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@://github.com"
+          git add .
+          git commit -m "chore: overwrite build-logic-commons inside existing android directories" || echo "No changes to commit"
+          git push
