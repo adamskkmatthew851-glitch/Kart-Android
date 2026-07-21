@@ -37,7 +37,7 @@ plugins {
 includeBuild("build-logic-commons")
 includeBuild("build-logic")
 
-apply(from = "gradle/shared-with-buildSrc/mirrors.settings.gradle.kts")
+// apply(from = "gradle/shared-with-buildSrc/mirrors.settings.gradle.kts")
 
 val architectureElements = mutableListOf<ArchitectureElementBuilder>()
 
